@@ -26,7 +26,22 @@ if CORS_AVAILABLE:
     CORS(app)
     print("CORS enabled for IoT integration")
 
-DATABASE = 'devices.db'
+# Database path - use /tmp for Vercel serverless functions
+DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'devices.db')
+# For Vercel, use /tmp directory (writable in serverless functions)
+if os.environ.get('VERCEL'):
+    # Try /tmp first, fallback to current directory
+    tmp_db = '/tmp/devices.db'
+    try:
+        # Test if /tmp is writable
+        test_file = '/tmp/.test_write'
+        with open(test_file, 'w') as f:
+            f.write('test')
+        os.remove(test_file)
+        DATABASE = tmp_db
+    except (OSError, PermissionError):
+        # If /tmp is not writable, use current directory
+        DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'devices.db')
 
 def init_db():
     """Initialize the database with the devices table and sample data."""
@@ -352,9 +367,14 @@ def start_temperature_thread():
     temperature_thread.start()
     print("Temperature sensor background thread started")
 
-# Start the background thread when the app initializes
-start_temperature_thread()
+# Start the background thread when the app initializes (only if not in Vercel)
+if not os.environ.get('VERCEL'):
+    start_temperature_thread()
 
+# Export app for Vercel
 if __name__ == '__main__':
     app.run(debug=True)
+else:
+    # For Vercel serverless functions
+    handler = app
 
