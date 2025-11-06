@@ -19,7 +19,15 @@ except ImportError:
     CORS_AVAILABLE = False
     print("Warning: flask_cors not installed. CORS disabled. Install with: pip install flask-cors")
 
-app = Flask(__name__)
+# Flask app initialization with explicit paths for Vercel compatibility
+if os.environ.get('VERCEL'):
+    # For Vercel, use absolute paths
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    app = Flask(__name__, 
+                static_folder=os.path.join(base_dir, 'static'),
+                template_folder=os.path.join(base_dir, 'templates'))
+else:
+    app = Flask(__name__)
 
 # Enable CORS for IoT integration if available
 if CORS_AVAILABLE:
