@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+  <!-- Fan blade 1 (top-right) -->
+  <ellipse cx="320" cy="200" rx="60" ry="120" fill="currentColor" opacity="0.85" transform="rotate(45 320 200)"/>
+  <!-- Fan blade 2 (bottom-right) -->
+  <ellipse cx="320" cy="312" rx="60" ry="120" fill="currentColor" opacity="0.85" transform="rotate(135 320 312)"/>
+  <!-- Fan blade 3 (bottom-left) -->
+  <ellipse cx="192" cy="312" rx="60" ry="120" fill="currentColor" opacity="0.85" transform="rotate(225 192 312)"/>
+  <!-- Fan blade 4 (top-left) -->
+  <ellipse cx="192" cy="200" rx="60" ry="120" fill="currentColor" opacity="0.85" transform="rotate(315 192 200)"/>
+  <!-- Center circle -->
+  <circle cx="256" cy="256" r="45" fill="currentColor"/>
+  <circle cx="256" cy="256" r="25" fill="none" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+</svg>

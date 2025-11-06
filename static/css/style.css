@@ -1,0 +1,1073 @@
+:root {
+    --bg-dark: #121212;
+    --card-bg: #1e1e1e;
+    --card-border: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #9e9e9e;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --accent-yellow: #f59e0b;
+    --glow-blue: rgba(59, 130, 246, 0.6);
+    --glow-green: rgba(16, 185, 129, 0.6);
+    --glow-red: rgba(239, 68, 68, 0.6);
+    --glow-yellow: rgba(245, 158, 11, 0.6);
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.dashboard-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    border-bottom: 2px solid var(--card-border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px var(--glow-blue);
+    transition: all 0.4s ease;
+    margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding-bottom: 2rem;
+}
+
+/* Footer */
+.dashboard-footer {
+    background: var(--card-bg);
+    border-top: 2px solid var(--card-border);
+    padding: 1.5rem 0;
+    margin-top: auto;
+    text-align: center;
+}
+
+.footer-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.developer-name {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0.75rem 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.developer-highlight {
+    color: var(--accent-blue);
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--glow-blue);
+    transition: all 0.3s ease;
+}
+
+.developer-highlight:hover {
+    color: var(--accent-green);
+    text-shadow: 0 0 15px var(--glow-green);
+    transform: scale(1.05);
+}
+
+/* Device Cards */
+.device-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.device-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.device-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    border-color: var(--accent-blue);
+}
+
+/* Light card hover - no glow when off */
+.device-card.light:not(.active):hover {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    border-color: var(--card-border);
+}
+
+.device-card.light:not(.active):hover::before {
+    opacity: 0;
+}
+
+/* Light card hover - glow when on */
+.device-card.light.active:hover {
+    box-shadow: 0 16px 48px var(--glow-yellow);
+    border-color: var(--accent-yellow);
+}
+
+.device-card.light.active:hover::before {
+    opacity: 1;
+    box-shadow: inset 0 0 40px var(--glow-yellow);
+}
+
+.device-card.fan:hover {
+    box-shadow: 0 16px 48px var(--glow-blue);
+    border-color: var(--accent-blue);
+}
+
+.device-card.fan:hover::before {
+    opacity: 1;
+    box-shadow: inset 0 0 40px var(--glow-blue);
+}
+
+.device-card.temperature:hover {
+    box-shadow: 0 16px 48px var(--glow-red);
+    border-color: var(--accent-red);
+}
+
+.device-card.temperature:hover::before {
+    opacity: 1;
+    box-shadow: inset 0 0 40px var(--glow-red);
+}
+
+/* Active state glow effects */
+.device-card.active {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 30px var(--glow-green), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.active {
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 30px var(--glow-yellow), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.fan.active {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 30px var(--glow-blue), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* Device Icons */
+.device-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+    transition: all 0.4s ease;
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+}
+
+/* SVG icon specific styles */
+.device-icon img,
+.device-icon svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: inherit;
+    transition: inherit;
+}
+
+/* Color filters for SVG icons */
+.device-icon.light img {
+    filter: brightness(0) saturate(100%) invert(77%) sepia(100%) saturate(2000%) hue-rotate(0deg) brightness(1.2);
+}
+
+.device-icon.fan img {
+    filter: brightness(0) saturate(100%) invert(45%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2);
+}
+
+.device-icon.temperature img {
+    filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(1.2);
+}
+
+/* Active state color filters */
+.device-card.light.active .device-icon.light img {
+    filter: brightness(0) saturate(100%) invert(77%) sepia(100%) saturate(2000%) hue-rotate(0deg) brightness(1.5) drop-shadow(0 0 25px var(--accent-yellow));
+}
+
+.device-card.fan.active .device-icon.fan img {
+    filter: brightness(0) saturate(100%) invert(45%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) drop-shadow(0 0 20px var(--accent-blue));
+}
+
+.device-card.temperature.active .device-icon.temperature img {
+    filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(1.2) drop-shadow(0 0 15px var(--accent-red));
+}
+
+/* Font Awesome icon styles */
+.device-icon i {
+    font-size: inherit;
+    display: block;
+    width: 100%;
+    height: 100%;
+    line-height: 1;
+}
+
+.device-card:hover .device-icon {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 15px currentColor);
+}
+
+.device-icon.light {
+    color: var(--accent-yellow);
+}
+
+.device-icon.fan {
+    color: var(--accent-blue);
+}
+
+.device-icon.temperature {
+    color: var(--accent-red);
+}
+
+/* Light bulb glow animation when on */
+.device-card.light.active .device-icon.light,
+.device-card.light.active .device-icon.light img {
+    animation: lightGlow 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 25px var(--accent-yellow)) drop-shadow(0 0 40px rgba(245, 158, 11, 0.6));
+    color: #ffd700;
+}
+
+.device-card.light:not(.active) .device-icon.light,
+.device-card.light:not(.active) .device-icon.light img {
+    filter: none;
+    color: var(--accent-yellow);
+    opacity: 0.5;
+}
+
+/* Light effect styles - affects entire card glow */
+.device-card.light.effect-vivid.active {
+    border-color: #ff00ff;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.6), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-vivid.active .device-icon.light,
+.device-card.light.effect-vivid.active .device-icon.light img {
+    color: #ff00ff;
+    filter: drop-shadow(0 0 30px #ff00ff) drop-shadow(0 0 50px rgba(255, 0, 255, 0.8));
+    animation: lightGlow 1s ease-in-out infinite;
+}
+
+.device-card.light.effect-natural.active {
+    border-color: #ffeb3b;
+    box-shadow: 0 0 30px rgba(255, 235, 59, 0.7), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-natural.active .device-icon.light,
+.device-card.light.effect-natural.active .device-icon.light img {
+    color: #ffeb3b;
+    filter: drop-shadow(0 0 25px #ffeb3b) drop-shadow(0 0 40px rgba(255, 235, 59, 0.7));
+    animation: lightGlow 1.5s ease-in-out infinite;
+}
+
+.device-card.light.effect-warm.active {
+    border-color: #ff6b35;
+    box-shadow: 0 0 30px rgba(255, 107, 53, 0.7), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-warm.active .device-icon.light,
+.device-card.light.effect-warm.active .device-icon.light img {
+    color: #ff6b35;
+    filter: drop-shadow(0 0 25px #ff6b35) drop-shadow(0 0 40px rgba(255, 107, 53, 0.7));
+    animation: lightGlow 2s ease-in-out infinite;
+}
+
+.device-card.light.effect-cool.active {
+    border-color: #00bfff;
+    box-shadow: 0 0 30px rgba(0, 191, 255, 0.6), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-cool.active .device-icon.light,
+.device-card.light.effect-cool.active .device-icon.light img {
+    color: #00bfff;
+    filter: drop-shadow(0 0 25px #00bfff) drop-shadow(0 0 40px rgba(0, 191, 255, 0.6));
+    animation: lightGlow 1.8s ease-in-out infinite;
+}
+
+.device-card.light.effect-dim.active {
+    border-color: #d3d3d3;
+    box-shadow: 0 0 20px rgba(211, 211, 211, 0.4), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-dim.active .device-icon.light,
+.device-card.light.effect-dim.active .device-icon.light img {
+    color: #d3d3d3;
+    filter: drop-shadow(0 0 15px #d3d3d3) drop-shadow(0 0 25px rgba(211, 211, 211, 0.4));
+    opacity: 0.7;
+    animation: lightGlow 3s ease-in-out infinite;
+}
+
+.device-card.light.effect-bright.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.device-card.light.effect-bright.active .device-icon.light,
+.device-card.light.effect-bright.active .device-icon.light img {
+    color: #ffffff;
+    filter: drop-shadow(0 0 40px #ffffff) drop-shadow(0 0 60px rgba(255, 255, 255, 0.9));
+    animation: lightGlow 0.8s ease-in-out infinite;
+}
+
+@keyframes lightGlow {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* Light effect buttons */
+.light-effects {
+    margin-top: 1rem;
+}
+
+.effect-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.effect-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-effect {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    transition: all 0.3s ease;
+    min-width: 70px;
+}
+
+.btn-effect:hover {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--glow-blue);
+}
+
+.btn-effect.active {
+    background: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: #000;
+    box-shadow: 0 0 15px var(--glow-yellow);
+}
+
+.btn-effect.active:hover {
+    background: var(--accent-yellow);
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--glow-yellow);
+}
+
+/* Fan spin animation when on - speed varies based on value */
+.device-card.fan.active .device-icon.fan,
+.device-card.fan.active .device-icon.fan img {
+    animation: fanSpin var(--fan-speed, 1s) linear infinite;
+    filter: drop-shadow(0 0 20px var(--accent-blue));
+    transform-origin: center center;
+}
+
+.device-card.fan:not(.active) .device-icon.fan,
+.device-card.fan:not(.active) .device-icon.fan img {
+    animation: none;
+    filter: none;
+    opacity: 0.5;
+}
+
+/* Fan speed classes - slower at lower speeds, faster at higher speeds */
+/* Only animate when fan is active */
+.device-card.fan.active[data-speed="0"] .device-icon.fan,
+.device-card.fan.active[data-speed="0"] .device-icon.fan img {
+    animation: none;
+}
+
+.device-card.fan.active[data-speed="10"] .device-icon.fan,
+.device-card.fan.active[data-speed="10"] .device-icon.fan img {
+    animation: fanSpin 4s linear infinite;
+}
+
+.device-card.fan.active[data-speed="20"] .device-icon.fan,
+.device-card.fan.active[data-speed="20"] .device-icon.fan img {
+    animation: fanSpin 3s linear infinite;
+}
+
+.device-card.fan.active[data-speed="30"] .device-icon.fan,
+.device-card.fan.active[data-speed="30"] .device-icon.fan img {
+    animation: fanSpin 2.5s linear infinite;
+}
+
+.device-card.fan.active[data-speed="40"] .device-icon.fan,
+.device-card.fan.active[data-speed="40"] .device-icon.fan img {
+    animation: fanSpin 2s linear infinite;
+}
+
+.device-card.fan.active[data-speed="50"] .device-icon.fan,
+.device-card.fan.active[data-speed="50"] .device-icon.fan img {
+    animation: fanSpin 1.5s linear infinite;
+}
+
+.device-card.fan.active[data-speed="60"] .device-icon.fan,
+.device-card.fan.active[data-speed="60"] .device-icon.fan img {
+    animation: fanSpin 1.2s linear infinite;
+}
+
+.device-card.fan.active[data-speed="70"] .device-icon.fan,
+.device-card.fan.active[data-speed="70"] .device-icon.fan img {
+    animation: fanSpin 1s linear infinite;
+}
+
+.device-card.fan.active[data-speed="80"] .device-icon.fan,
+.device-card.fan.active[data-speed="80"] .device-icon.fan img {
+    animation: fanSpin 0.6s linear infinite;
+}
+
+.device-card.fan.active[data-speed="90"] .device-icon.fan,
+.device-card.fan.active[data-speed="90"] .device-icon.fan img {
+    animation: fanSpin 0.4s linear infinite;
+}
+
+.device-card.fan.active[data-speed="100"] .device-icon.fan,
+.device-card.fan.active[data-speed="100"] .device-icon.fan img {
+    animation: fanSpin 0.2s linear infinite;
+}
+
+@keyframes fanSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Temperature pulse animation when on */
+.device-card.temperature.active .device-icon.temperature,
+.device-card.temperature.active .device-icon.temperature img {
+    animation: temperaturePulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px var(--accent-red));
+}
+
+.device-card.temperature:not(.active) .device-icon.temperature,
+.device-card.temperature:not(.active) .device-icon.temperature img {
+    animation: none;
+    filter: none;
+    opacity: 0.7;
+}
+
+@keyframes temperaturePulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: drop-shadow(0 0 15px var(--accent-red));
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 25px var(--accent-red));
+    }
+}
+
+.device-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.device-state {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    transition: all 0.3s ease;
+}
+
+.state-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.state-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.state-value.on {
+    color: var(--accent-green);
+    text-shadow: 0 0 10px var(--glow-green);
+}
+
+.state-value.off {
+    color: var(--text-secondary);
+}
+
+.state-value.number {
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px var(--glow-blue);
+}
+
+/* Control Buttons */
+.btn-control {
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-toggle {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+    color: white;
+    width: 100%;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-toggle:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 25px var(--glow-blue);
+    border-color: var(--accent-blue);
+}
+
+.btn-toggle:active {
+    transform: scale(0.98) translateY(0);
+    transition: all 0.1s ease;
+}
+
+.btn-speed {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 2px solid var(--card-border);
+    flex: 1;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.btn-speed:hover {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    box-shadow: 0 5px 20px var(--glow-blue);
+    transform: translateY(-3px);
+    color: white;
+}
+
+.btn-speed:active {
+    transform: translateY(0);
+    transition: all 0.1s ease;
+}
+
+.speed-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Disabled button styles */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Spinner in button */
+.btn .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem 0;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .device-card {
+        padding: 0.75rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        min-height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        overflow: visible;
+    }
+
+    .device-icon {
+        font-size: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .device-name {
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .state-label {
+        font-size: 0.6rem;
+    }
+
+    .state-value {
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-control {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.75rem;
+        min-height: 40px;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-speed {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.7rem;
+        min-height: 40px;
+        flex: 1;
+    }
+
+    .btn-effect {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.65rem;
+        min-height: 36px;
+        min-width: 50px;
+    }
+
+    .dashboard-footer {
+        padding: 0.75rem 0;
+    }
+
+    .footer-text {
+        font-size: 0.7rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .developer-name {
+        font-size: 0.65rem;
+        margin-top: 0.5rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .developer-highlight {
+        font-size: 0.75rem;
+    }
+
+    .toast-container {
+        bottom: 60px !important;
+        padding: 0.75rem !important;
+        max-width: 95%;
+        left: 50% !important;
+        transform: translateX(-50%);
+        right: auto !important;
+    }
+
+    .toast {
+        max-width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .toast-header {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.85rem;
+    }
+
+    .toast-body {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.85rem;
+    }
+
+    .speed-controls {
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+
+    .btn-speed {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .effect-buttons {
+        gap: 0.3rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .light-effects {
+        margin-top: 0.5rem;
+    }
+
+    /* Make cards more compact and rectangular */
+    #devices-container .col-6 {
+        padding: 0.4rem;
+    }
+
+    .device-card {
+        max-width: 100%;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header {
+        padding: 0.75rem 0;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.1rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .device-card {
+        padding: 0.6rem;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .device-icon {
+        font-size: 1.4rem;
+        width: 1.4rem;
+        height: 1.4rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .device-name {
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .state-label {
+        font-size: 0.55rem;
+    }
+
+    .state-value {
+        font-size: 0.85rem;
+        margin-top: 0.15rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .btn-control {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.7rem;
+        min-height: 38px;
+        width: 100%;
+        margin-bottom: 0.4rem;
+    }
+
+    .btn-speed {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.65rem;
+        min-height: 38px;
+        flex: 1;
+    }
+
+    .btn-effect {
+        padding: 0.45rem 0.55rem;
+        font-size: 0.6rem;
+        min-height: 34px;
+        min-width: 45px;
+    }
+
+    .speed-controls {
+        flex-direction: row;
+        gap: 0.4rem;
+        margin-top: 0.4rem;
+        width: 100%;
+    }
+
+    .btn-speed {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Hide text on speed buttons, show only icons on mobile */
+    .btn-speed .bi-dash-lg::after,
+    .btn-speed .bi-plus-lg::after {
+        content: '';
+    }
+
+    .btn-speed {
+        font-size: 0;
+        padding: 0.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-speed .bi {
+        font-size: 1rem;
+    }
+
+    .effect-buttons {
+        gap: 0.25rem;
+        margin-top: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .light-effects {
+        margin-top: 0.4rem;
+    }
+
+    .footer-text {
+        font-size: 0.65rem;
+    }
+
+    .developer-name {
+        font-size: 0.6rem;
+        margin-top: 0.4rem;
+    }
+
+    .developer-highlight {
+        font-size: 0.7rem;
+    }
+
+    /* Make cards more compact on small screens */
+    #devices-container .col-6 {
+        padding: 0.3rem;
+    }
+
+    .device-card {
+        overflow: visible;
+    }
+
+    /* Ensure buttons are thumb-friendly */
+    .btn-toggle,
+    .btn-speed,
+    .btn-effect {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Very small screens (320px and below) */
+@media (max-width: 360px) {
+    .dashboard-header {
+        padding: 0.5rem 0;
+    }
+
+    .dashboard-header h1 {
+        font-size: 0.9rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.6rem;
+    }
+
+    /* Keep 2 cards per row on very small screens */
+    #devices-container .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 0.25rem;
+    }
+
+    .device-card {
+        padding: 0.5rem;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    .device-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .device-name {
+        font-size: 0.75rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .state-label {
+        font-size: 0.55rem;
+    }
+
+    .state-value {
+        font-size: 0.85rem;
+        margin-top: 0.15rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .btn-control {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.65rem;
+        min-height: 36px;
+        width: 100%;
+        margin-bottom: 0.3rem;
+    }
+
+    .btn-speed {
+        padding: 0.4rem;
+        font-size: 0;
+        min-height: 36px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-speed .bi {
+        font-size: 1rem;
+    }
+
+    .btn-effect {
+        padding: 0.35rem 0.45rem;
+        font-size: 0.55rem;
+        min-height: 32px;
+        min-width: 40px;
+    }
+
+    .speed-controls {
+        flex-direction: row;
+        gap: 0.4rem;
+        margin-top: 0.3rem;
+        width: 100%;
+    }
+
+    .btn-speed {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .effect-buttons {
+        gap: 0.2rem;
+        margin-top: 0.3rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .light-effects {
+        margin-top: 0.3rem;
+    }
+
+    .effect-label {
+        font-size: 0.6rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .footer-text {
+        font-size: 0.7rem;
+    }
+
+    .developer-name {
+        font-size: 0.65rem;
+        margin-top: 0.5rem;
+    }
+
+    .developer-highlight {
+        font-size: 0.75rem;
+    }
+
+    .toast-container {
+        bottom: 50px !important;
+        padding: 0.5rem !important;
+        max-width: 90%;
+        left: 50% !important;
+        transform: translateX(-50%);
+        right: auto !important;
+    }
+
+    .toast {
+        max-width: 100%;
+        font-size: 0.75rem;
+    }
+
+    .toast-header {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .toast-body {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
