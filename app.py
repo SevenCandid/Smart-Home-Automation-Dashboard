@@ -186,67 +186,80 @@ def init_energy_table():
     conn.close()
 
 # Initialize database if it doesn't exist
-if not os.path.exists(DATABASE):
-    init_db()
-    init_scenes_table()
-    init_schedules_table()
-    init_energy_table()
-else:
-    # Check and add columns if missing, add new devices
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(devices)")
-        columns = [column[1] for column in cursor.fetchall()]
-        
-        # Add missing columns
-        column_additions = {
-            'light_effect': ('TEXT DEFAULT "natural"', 'UPDATE devices SET light_effect = "natural" WHERE type = "light"'),
-            'ac_mode': ('TEXT DEFAULT "cool"', 'UPDATE devices SET ac_mode = "cool" WHERE type = "ac"'),
-            'device_mode': ('TEXT', None),
-            'battery_level': ('INTEGER', None),
-            'power_consumption': ('REAL', None)
-        }
-        
-        for col_name, (col_def, update_sql) in column_additions.items():
-            if col_name not in columns:
-                cursor.execute(f'ALTER TABLE devices ADD COLUMN {col_name} {col_def}')
-                if update_sql:
-                    cursor.execute(update_sql)
-        
-        # Add new devices if they don't exist
-        new_devices = [
-            ('Smart Lock', 'lock', 'locked', None, None, None, 'locked', None, None),
-            ('Smart Blinds', 'blinds', 'closed', 0, None, None, None, None, None),
-            ('Smart Plug', 'plug', 'off', None, None, None, None, None, 0.0),
-            ('Security Camera', 'camera', 'off', None, None, None, 'idle', None, None),
-            ('Smart Speaker', 'speaker', 'off', 50, None, None, 'bluetooth', None, None),
-            ('Garage Door', 'garage', 'closed', None, None, None, 'closed', None, None),
-            ('Smart Thermostat', 'thermostat', 'off', 22, None, None, 'auto', None, None),
-            ('Smart Vacuum', 'vacuum', 'off', None, None, None, 'auto', 85, None),
-            ('Smart Doorbell', 'doorbell', 'on', None, None, None, 'idle', 90, None),
-            ('Smart Sprinkler', 'sprinkler', 'off', None, None, None, 'zone1', None, None),
-            ('Motion Sensor', 'motion', 'on', None, None, None, None, None, None),
-            ('Smart TV', 'tv', 'off', 30, None, None, 'hdmi1', None, None)
-        ]
-        
-        for device in new_devices:
-            cursor.execute('SELECT COUNT(*) FROM devices WHERE type = ?', (device[1],))
-            if cursor.fetchone()[0] == 0:
-                cursor.execute('''
-                    INSERT INTO devices (name, type, state, value, light_effect, ac_mode, device_mode, battery_level, power_consumption)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', device)
-        
-        conn.commit()
-        conn.close()
-        
-        # Initialize additional tables
-        init_scenes_table()
-        init_schedules_table()
-        init_energy_table()
-    except Exception as e:
-        print(f"Error updating database schema: {e}")
+# Wrap in try-except to prevent import-time crashes
+try:
+    if not os.path.exists(DATABASE):
+        try:
+            init_db()
+            init_scenes_table()
+            init_schedules_table()
+            init_energy_table()
+        except Exception as init_err:
+            print(f"Warning: Database initialization failed: {init_err}")
+            # Continue - database will be initialized on first request if needed
+    else:
+        # Check and add columns if missing, add new devices
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(devices)")
+            columns = [column[1] for column in cursor.fetchall()]
+            
+            # Add missing columns
+            column_additions = {
+                'light_effect': ('TEXT DEFAULT "natural"', 'UPDATE devices SET light_effect = "natural" WHERE type = "light"'),
+                'ac_mode': ('TEXT DEFAULT "cool"', 'UPDATE devices SET ac_mode = "cool" WHERE type = "ac"'),
+                'device_mode': ('TEXT', None),
+                'battery_level': ('INTEGER', None),
+                'power_consumption': ('REAL', None)
+            }
+            
+            for col_name, (col_def, update_sql) in column_additions.items():
+                if col_name not in columns:
+                    cursor.execute(f'ALTER TABLE devices ADD COLUMN {col_name} {col_def}')
+                    if update_sql:
+                        cursor.execute(update_sql)
+            
+            # Add new devices if they don't exist
+            new_devices = [
+                ('Smart Lock', 'lock', 'locked', None, None, None, 'locked', None, None),
+                ('Smart Blinds', 'blinds', 'closed', 0, None, None, None, None, None),
+                ('Smart Plug', 'plug', 'off', None, None, None, None, None, 0.0),
+                ('Security Camera', 'camera', 'off', None, None, None, 'idle', None, None),
+                ('Smart Speaker', 'speaker', 'off', 50, None, None, 'bluetooth', None, None),
+                ('Garage Door', 'garage', 'closed', None, None, None, 'closed', None, None),
+                ('Smart Thermostat', 'thermostat', 'off', 22, None, None, 'auto', None, None),
+                ('Smart Vacuum', 'vacuum', 'off', None, None, None, 'auto', 85, None),
+                ('Smart Doorbell', 'doorbell', 'on', None, None, None, 'idle', 90, None),
+                ('Smart Sprinkler', 'sprinkler', 'off', None, None, None, 'zone1', None, None),
+                ('Motion Sensor', 'motion', 'on', None, None, None, None, None, None),
+                ('Smart TV', 'tv', 'off', 30, None, None, 'hdmi1', None, None)
+            ]
+            
+            for device in new_devices:
+                cursor.execute('SELECT COUNT(*) FROM devices WHERE type = ?', (device[1],))
+                if cursor.fetchone()[0] == 0:
+                    cursor.execute('''
+                        INSERT INTO devices (name, type, state, value, light_effect, ac_mode, device_mode, battery_level, power_consumption)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', device)
+            
+            conn.commit()
+            conn.close()
+            
+            # Initialize additional tables
+            try:
+                init_scenes_table()
+                init_schedules_table()
+                init_energy_table()
+            except Exception as table_err:
+                print(f"Warning: Additional table initialization failed: {table_err}")
+        except Exception as e:
+            print(f"Warning: Database schema update failed: {e}")
+            # Continue - app can still work
+except Exception as e:
+    print(f"Warning: Database initialization error (non-fatal): {e}")
+    # Don't crash on import - let it initialize on first request
 
 def device_to_dict(row):
     """Convert a database row to a dictionary."""
