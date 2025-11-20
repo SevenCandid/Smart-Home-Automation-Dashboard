@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" fill="currentColor">
+  <!-- Thermometer stem -->
+  <rect x="140" y="16" width="40" height="400" rx="20" fill="currentColor"/>
+  <!-- Thermometer bulb -->
+  <circle cx="160" cy="440" r="56" fill="currentColor"/>
+  <!-- Mercury column -->
+  <rect x="148" y="48" width="24" height="360" rx="12" fill="currentColor" opacity="0.5"/>
+  <!-- Scale marks -->
+  <line x1="116" y1="64" x2="140" y2="64" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="116" y1="128" x2="140" y2="128" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="116" y1="192" x2="140" y2="192" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="116" y1="256" x2="140" y2="256" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="116" y1="320" x2="140" y2="320" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="180" y1="64" x2="204" y2="64" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="180" y1="128" x2="204" y2="128" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="180" y1="192" x2="204" y2="192" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="180" y1="256" x2="204" y2="256" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+  <line x1="180" y1="320" x2="204" y2="320" stroke="currentColor" stroke-width="4" opacity="0.5"/>
+</svg>
