@@ -281,6 +281,18 @@ def device_to_dict(row):
 def index():
     return render_template('index.html')
 
+# Catch-all route for SPA (Single Page Application) - must be last
+@app.route('/<path:path>')
+def catch_all(path):
+    # If it's a static file request, let Flask handle it
+    if path.startswith('static/'):
+        return app.send_static_file(path.replace('static/', ''))
+    # For API routes, return 404
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
+    # For everything else, serve the index page (for client-side routing)
+    return render_template('index.html')
+
 @app.route('/api/devices', methods=['GET'])
 def get_devices():
     """
