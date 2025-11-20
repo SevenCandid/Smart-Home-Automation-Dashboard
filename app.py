@@ -281,6 +281,15 @@ def device_to_dict(row):
 def index():
     return render_template('index.html')
 
+@app.route('/health')
+def health():
+    """Health check endpoint for Vercel"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Server is running',
+        'vercel': os.environ.get('VERCEL', 'false')
+    }), 200
+
 @app.route('/api/devices', methods=['GET'])
 def get_devices():
     """
