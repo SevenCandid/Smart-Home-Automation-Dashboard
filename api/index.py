@@ -1,9 +1,9 @@
 """
 Vercel serverless function handler for Flask app
+Simplified version for better compatibility
 """
 import os
 import sys
-import io
 
 # Add parent directory to path to import app
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,20 +18,9 @@ flask_app = None
 error_msg = None
 
 try:
-    # Try importing from parent directory
-    try:
-        from app import app, init_db
-        flask_app = app
-    except ImportError as import_err:
-        # If that fails, try adding the parent directory explicitly
-        parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if parent not in sys.path:
-            sys.path.insert(0, parent)
-        try:
-            from app import app, init_db
-            flask_app = app
-        except ImportError:
-            raise import_err
+    # Import Flask app
+    from app import app, init_db
+    flask_app = app
     
     # Initialize database on first import (for Vercel)
     try:
@@ -41,8 +30,11 @@ try:
         init_scenes_table()
         init_schedules_table()
         init_energy_table()
+        print("Database initialized successfully")
     except Exception as e:
         print(f"Database initialization note: {e}")
+    
+    print("Flask app loaded successfully")
     
 except Exception as e:
     import traceback
@@ -60,8 +52,14 @@ except Exception as e:
     
     flask_app = error_app
 
-# Vercel Python handler function
-# Vercel's @vercel/python expects a handler function
+# Use Werkzeug's WSGI adapter for Vercel
+try:
+    from werkzeug.serving import WSGIRequestHandler
+    from werkzeug.wrappers import Request, Response
+except ImportError:
+    # Fallback if werkzeug not available
+    WSGIRequestHandler = None
+
 def handler(req, res):
     """Vercel serverless function handler"""
     try:
@@ -70,136 +68,96 @@ def handler(req, res):
             res.send("<h1>Error: Flask app not initialized</h1>")
             return
         
-        # Debug: Print request object structure
-        print(f"Request type: {type(req)}")
-        print(f"Request attributes: {dir(req)}")
+        # Get request details - Vercel's format
+        method = getattr(req, 'method', 'GET') or 'GET'
         
-        # Try to get path from request - Vercel's format
+        # Get path from request
         path = '/'
-        try:
-            # Try different ways Vercel might pass the path
-            if hasattr(req, 'path'):
-                path = str(req.path) if req.path else '/'
-            elif hasattr(req, 'url'):
-                url = str(req.url) if req.url else '/'
-                path = url.split('?')[0] if '?' in url else url
-            elif hasattr(req, 'pathname'):
-                path = str(req.pathname) if req.pathname else '/'
-            else:
-                # Try accessing as dict-like
-                try:
-                    path = req.get('path', '/') if hasattr(req, 'get') else '/'
-                except:
-                    pass
-        except Exception as path_err:
-            print(f"Error getting path: {path_err}")
-            path = '/'
+        if hasattr(req, 'path'):
+            path = req.path or '/'
+        elif hasattr(req, 'url'):
+            url = req.url or '/'
+            path = url.split('?')[0] if '?' in url else url
         
-        # Ensure path starts with /
-        if not path or not path.startswith('/'):
+        if not path.startswith('/'):
             path = '/' + path
-        
-        # Get method
-        method = 'GET'
-        try:
-            if hasattr(req, 'method'):
-                method = str(req.method) if req.method else 'GET'
-            elif hasattr(req, 'get'):
-                method = req.get('method', 'GET')
-        except:
-            pass
         
         # Get headers
         headers = {}
-        try:
-            if hasattr(req, 'headers'):
-                headers = dict(req.headers) if req.headers else {}
-            elif hasattr(req, 'get'):
-                headers = req.get('headers', {})
-        except:
-            pass
+        if hasattr(req, 'headers') and req.headers:
+            headers = dict(req.headers)
         
         # Get body
         body = b''
-        try:
-            if hasattr(req, 'body'):
-                body_data = req.body
-                if isinstance(body_data, str):
-                    body = body_data.encode('utf-8')
-                elif body_data:
-                    body = bytes(body_data)
-        except:
-            pass
+        if hasattr(req, 'body'):
+            body_data = req.body
+            if isinstance(body_data, str):
+                body = body_data.encode('utf-8')
+            elif body_data:
+                body = bytes(body_data) if not isinstance(body_data, bytes) else body_data
         
-        # Get query
-        query = {}
-        try:
-            if hasattr(req, 'query'):
-                query = dict(req.query) if req.query else {}
-            elif hasattr(req, 'get'):
-                query = req.get('query', {})
-        except:
-            pass
+        # Get query string
+        query_string = ''
+        if hasattr(req, 'query') and req.query:
+            query_string = '&'.join([f"{k}={v}" for k, v in req.query.items()])
         
-        print(f"Vercel Handler - Path: {path}, Method: {method}")
-        
-        # Handle string body
-        if isinstance(body, str):
-            body = body.encode('utf-8')
-        
-        # Create WSGI environment
+        # Create WSGI environ
         environ = {
             'REQUEST_METHOD': method,
             'PATH_INFO': path,
             'SCRIPT_NAME': '',
-            'QUERY_STRING': '&'.join([f"{k}={v}" for k, v in query.items()]) if query else '',
-            'CONTENT_TYPE': headers.get('content-type', '') or headers.get('Content-Type', '') or '',
-            'CONTENT_LENGTH': str(len(body)) if body else '0',
+            'QUERY_STRING': query_string,
+            'CONTENT_TYPE': headers.get('content-type', '') or headers.get('Content-Type', ''),
+            'CONTENT_LENGTH': str(len(body)),
             'SERVER_NAME': 'localhost',
             'SERVER_PORT': '443',
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': 'https',
-            'wsgi.input': io.BytesIO(body),
+            'wsgi.input': None,  # Will be set below
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
             'wsgi.multiprocess': True,
             'wsgi.run_once': False,
         }
         
-        # Add headers to environ
-        if headers:
-            for key, value in headers.items():
-                try:
-                    key_upper = str(key).upper().replace('-', '_')
-                    if key_upper not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):
-                        environ[f'HTTP_{key_upper}'] = str(value)
-                except:
-                    pass
+        # Add HTTP headers
+        for key, value in headers.items():
+            key_upper = key.upper().replace('-', '_')
+            if key_upper not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):
+                environ[f'HTTP_{key_upper}'] = str(value)
+        
+        # Create input stream
+        import io
+        environ['wsgi.input'] = io.BytesIO(body)
         
         # Response storage
         response_status = [None]
         response_headers = [None]
         response_body = []
         
-        def start_response(status, headers):
+        def start_response(status, headers_list):
             response_status[0] = status
-            response_headers[0] = dict(headers)
+            response_headers[0] = dict(headers_list)
         
         # Call Flask app
         result = flask_app(environ, start_response)
         
-        # Collect response body
+        # Collect response
         for chunk in result:
             if chunk:
                 response_body.append(chunk)
         
-        # Set response
+        # Close result if it has close method
+        if hasattr(result, 'close'):
+            result.close()
+        
+        # Set response status
         status_code = 200
-        try:
-            if response_status[0]:
+        if response_status[0]:
+            try:
                 status_code = int(str(response_status[0]).split()[0])
-        except:
-            pass
+            except:
+                pass
         
         res.status(status_code)
         
@@ -211,24 +169,24 @@ def handler(req, res):
                 except:
                     pass
         
-        # Set body
+        # Send body
+        body_bytes = b''.join(response_body)
         try:
-            body_str = b''.join(response_body).decode('utf-8') if response_body else ''
+            body_str = body_bytes.decode('utf-8')
             res.send(body_str)
-        except Exception as send_err:
-            print(f"Error sending response: {send_err}")
-            res.send("")
+        except:
+            # If decode fails, try to send as is
+            res.send(body_bytes)
         
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        error_msg = f"Error in handler: {str(e)}\n{error_trace}"
+        error_msg = f"Handler error: {str(e)}\n{error_trace}"
         print(error_msg)
+        
         try:
             res.status(500)
-            res.headers['Content-Type'] = 'text/html'
-            res.send(f"<h1>Internal Server Error</h1><pre>{str(e)}\n{error_trace}</pre>")
+            res.headers['Content-Type'] = 'text/html; charset=utf-8'
+            res.send(f"<h1>Internal Server Error</h1><pre>{error_msg}</pre>")
         except:
-            # If we can't even send error response, at least log it
             print("CRITICAL: Could not send error response")
-
