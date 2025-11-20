@@ -64,35 +64,83 @@ except Exception as e:
 # Vercel's @vercel/python expects a handler function
 def handler(req, res):
     """Vercel serverless function handler"""
-    if flask_app is None:
-        res.status(500)
-        res.send("<h1>Error: Flask app not initialized</h1>")
-        return
-    
-    # Get request details from Vercel's request object
     try:
-        # Vercel's request object structure - try multiple ways to get path
+        if flask_app is None:
+            res.status(500)
+            res.send("<h1>Error: Flask app not initialized</h1>")
+            return
+        
+        # Debug: Print request object structure
+        print(f"Request type: {type(req)}")
+        print(f"Request attributes: {dir(req)}")
+        
+        # Try to get path from request - Vercel's format
         path = '/'
-        if hasattr(req, 'url'):
-            url = req.url
-            # Remove query string if present
-            path = url.split('?')[0] if '?' in url else url
-        elif hasattr(req, 'path'):
-            path = req.path
-        elif hasattr(req, 'pathname'):
-            path = req.pathname
+        try:
+            # Try different ways Vercel might pass the path
+            if hasattr(req, 'path'):
+                path = str(req.path) if req.path else '/'
+            elif hasattr(req, 'url'):
+                url = str(req.url) if req.url else '/'
+                path = url.split('?')[0] if '?' in url else url
+            elif hasattr(req, 'pathname'):
+                path = str(req.pathname) if req.pathname else '/'
+            else:
+                # Try accessing as dict-like
+                try:
+                    path = req.get('path', '/') if hasattr(req, 'get') else '/'
+                except:
+                    pass
+        except Exception as path_err:
+            print(f"Error getting path: {path_err}")
+            path = '/'
         
         # Ensure path starts with /
-        if not path.startswith('/'):
+        if not path or not path.startswith('/'):
             path = '/' + path
         
-        # Get method, headers, body, query
-        method = getattr(req, 'method', 'GET') or 'GET'
-        headers = getattr(req, 'headers', {}) or {}
-        body = getattr(req, 'body', b'') or b''
-        query = getattr(req, 'query', {}) or {}
+        # Get method
+        method = 'GET'
+        try:
+            if hasattr(req, 'method'):
+                method = str(req.method) if req.method else 'GET'
+            elif hasattr(req, 'get'):
+                method = req.get('method', 'GET')
+        except:
+            pass
         
-        # Debug logging (remove in production if needed)
+        # Get headers
+        headers = {}
+        try:
+            if hasattr(req, 'headers'):
+                headers = dict(req.headers) if req.headers else {}
+            elif hasattr(req, 'get'):
+                headers = req.get('headers', {})
+        except:
+            pass
+        
+        # Get body
+        body = b''
+        try:
+            if hasattr(req, 'body'):
+                body_data = req.body
+                if isinstance(body_data, str):
+                    body = body_data.encode('utf-8')
+                elif body_data:
+                    body = bytes(body_data)
+        except:
+            pass
+        
+        # Get query
+        query = {}
+        try:
+            if hasattr(req, 'query'):
+                query = dict(req.query) if req.query else {}
+            elif hasattr(req, 'get'):
+                query = req.get('query', {})
+        except:
+            pass
+        
         print(f"Vercel Handler - Path: {path}, Method: {method}")
         
         # Handle string body
@@ -105,7 +153,7 @@ def handler(req, res):
             'PATH_INFO': path,
             'SCRIPT_NAME': '',
             'QUERY_STRING': '&'.join([f"{k}={v}" for k, v in query.items()]) if query else '',
-            'CONTENT_TYPE': headers.get('content-type', '') or headers.get('Content-Type', ''),
+            'CONTENT_TYPE': headers.get('content-type', '') or headers.get('Content-Type', '') or '',
             'CONTENT_LENGTH': str(len(body)) if body else '0',
             'SERVER_NAME': 'localhost',
             'SERVER_PORT': '443',
@@ -121,9 +169,12 @@ def handler(req, res):
         # Add headers to environ
         if headers:
             for key, value in headers.items():
-                key_upper = key.upper().replace('-', '_')
-                if key_upper not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):
-                    environ[f'HTTP_{key_upper}'] = str(value)
+                try:
+                    key_upper = str(key).upper().replace('-', '_')
+                    if key_upper not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):
+                        environ[f'HTTP_{key_upper}'] = str(value)
+                except:
+                    pass
         
         # Response storage
         response_status = [None]
@@ -143,23 +194,41 @@ def handler(req, res):
                 response_body.append(chunk)
         
         # Set response
-        status_code = int(response_status[0].split()[0]) if response_status[0] else 200
+        status_code = 200
+        try:
+            if response_status[0]:
+                status_code = int(str(response_status[0]).split()[0])
+        except:
+            pass
+        
         res.status(status_code)
         
         # Set headers
         if response_headers[0]:
             for key, value in response_headers[0].items():
-                res.headers[key] = str(value)
+                try:
+                    res.headers[str(key)] = str(value)
+                except:
+                    pass
         
         # Set body
-        body_str = b''.join(response_body).decode('utf-8') if response_body else ''
-        res.send(body_str)
+        try:
+            body_str = b''.join(response_body).decode('utf-8') if response_body else ''
+            res.send(body_str)
+        except Exception as send_err:
+            print(f"Error sending response: {send_err}")
+            res.send("")
         
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        print(f"Error in handler: {e}\n{error_trace}")
-        res.status(500)
-        res.headers['Content-Type'] = 'text/html'
-        res.send(f"<h1>Internal Server Error</h1><pre>{str(e)}\n{error_trace}</pre>")
+        error_msg = f"Error in handler: {str(e)}\n{error_trace}"
+        print(error_msg)
+        try:
+            res.status(500)
+            res.headers['Content-Type'] = 'text/html'
+            res.send(f"<h1>Internal Server Error</h1><pre>{str(e)}\n{error_trace}</pre>")
+        except:
+            # If we can't even send error response, at least log it
+            print("CRITICAL: Could not send error response")
 
