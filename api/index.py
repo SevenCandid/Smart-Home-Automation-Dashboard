@@ -104,22 +104,51 @@ def handler(req, res):
             res.send(f"<h1>Error</h1><pre>{error_msg}</pre>")
             return
         
+        # Debug: Print request object info
+        print(f"Handler called - Request type: {type(req)}")
+        print(f"Request attributes: {[attr for attr in dir(req) if not attr.startswith('_')]}")
+        
         # Extract request info safely
         method = 'GET'
         try:
             method = getattr(req, 'method', 'GET') or 'GET'
-        except:
-            pass
+            print(f"Method: {method}")
+        except Exception as e:
+            print(f"Error getting method: {e}")
         
+        # Try multiple ways to get path
         path = '/'
         try:
-            path = getattr(req, 'path', None) or getattr(req, 'url', '/') or '/'
-            if isinstance(path, str) and '?' in path:
-                path = path.split('?')[0]
-            if not str(path).startswith('/'):
-                path = '/' + str(path)
-        except:
-            pass
+            # Try req.path first
+            if hasattr(req, 'path'):
+                path = req.path
+                print(f"Got path from req.path: {path}")
+            # Try req.url
+            elif hasattr(req, 'url'):
+                url = req.url
+                path = url.split('?')[0] if '?' in str(url) else str(url)
+                print(f"Got path from req.url: {path}")
+            # Try accessing as dict
+            elif hasattr(req, 'get'):
+                path = req.get('path', '/')
+                print(f"Got path from req.get: {path}")
+            else:
+                print("Could not find path attribute, using '/'")
+                path = '/'
+            
+            # Normalize path
+            if isinstance(path, str):
+                if '?' in path:
+                    path = path.split('?')[0]
+                if not path.startswith('/'):
+                    path = '/' + path
+            else:
+                path = '/'
+            
+            print(f"Final path: {path}")
+        except Exception as e:
+            print(f"Error extracting path: {e}")
+            path = '/'
         
         # Get headers
         headers = {}
