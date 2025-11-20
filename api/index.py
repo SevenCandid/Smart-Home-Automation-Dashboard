@@ -1,10 +1,11 @@
 """
 Vercel serverless function handler for Flask app
-Proper handler function for @vercel/python runtime
+With comprehensive error handling for import-time errors
 """
 import os
 import sys
 import io
+import traceback
 
 # Add parent directory to path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,53 +14,119 @@ if parent_dir not in sys.path:
 
 os.environ['VERCEL'] = '1'
 
-# Load Flask app
+# Global variables
 flask_app = None
+import_error = None
+
+# Try to import Flask app with comprehensive error handling
+print("=" * 60)
+print("STARTING FLASK APP IMPORT")
+print("=" * 60)
+
 try:
+    print("Step 1: Importing app module...")
     from app import app
     flask_app = app
+    print("✓ App imported successfully")
     
-    # Initialize database
+    print("Step 2: Initializing database...")
     try:
         from app import init_db, init_scenes_table, init_schedules_table, init_energy_table
         init_db()
+        print("✓ init_db() completed")
         init_scenes_table()
+        print("✓ init_scenes_table() completed")
         init_schedules_table()
+        print("✓ init_schedules_table() completed")
         init_energy_table()
-    except Exception as e:
-        print(f"DB init: {e}")
+        print("✓ init_energy_table() completed")
+        print("✓ Database initialization complete")
+    except Exception as db_err:
+        print(f"⚠ Database initialization error: {db_err}")
+        print(traceback.format_exc())
+        # Continue even if DB init fails
+    
+    print("=" * 60)
+    print("FLASK APP READY")
+    print("=" * 60)
+    
+except ImportError as import_err:
+    import_error = f"Import Error: {str(import_err)}\n{traceback.format_exc()}"
+    print("=" * 60)
+    print("IMPORT FAILED")
+    print("=" * 60)
+    print(import_error)
+    print("=" * 60)
+    
+    # Create minimal error app
+    try:
+        from flask import Flask
+        error_app = Flask(__name__)
+        @error_app.route('/<path:path>')
+        @error_app.route('/')
+        def error_handler(path=''):
+            return f"<h1>Import Error</h1><pre>{import_error}</pre>", 500
+        flask_app = error_app
+        print("✓ Error Flask app created")
+    except Exception as flask_err:
+        print(f"✗ Could not create error app: {flask_err}")
+        import_error += f"\n\nAlso failed to create error app: {flask_err}"
+
 except Exception as e:
-    import traceback
-    print(f"Import error: {traceback.format_exc()}")
-    from flask import Flask
-    flask_app = Flask(__name__)
-    @flask_app.route('/<path:path>')
-    @flask_app.route('/')
-    def error(path=''):
-        return f"<h1>Error</h1><pre>{str(e)}</pre>", 500
+    import_error = f"Unexpected Error: {str(e)}\n{traceback.format_exc()}"
+    print("=" * 60)
+    print("UNEXPECTED ERROR")
+    print("=" * 60)
+    print(import_error)
+    print("=" * 60)
+    
+    # Create minimal error app
+    try:
+        from flask import Flask
+        error_app = Flask(__name__)
+        @error_app.route('/<path:path>')
+        @error_app.route('/')
+        def error_handler(path=''):
+            return f"<h1>Error</h1><pre>{import_error}</pre>", 500
+        flask_app = error_app
+    except:
+        pass
 
 def handler(req, res):
     """Vercel handler function"""
-    if flask_app is None:
-        res.status(500)
-        res.send("Flask app not loaded")
-        return
-    
     try:
-        # Extract request info
-        method = getattr(req, 'method', 'GET') or 'GET'
-        path = getattr(req, 'path', None) or getattr(req, 'url', '/') or '/'
-        if '?' in str(path):
-            path = str(path).split('?')[0]
-        if not str(path).startswith('/'):
-            path = '/' + str(path)
+        if flask_app is None:
+            error_msg = "Flask app is None"
+            if import_error:
+                error_msg += f"\n\n{import_error}"
+            res.status(500)
+            res.headers['Content-Type'] = 'text/html'
+            res.send(f"<h1>Error</h1><pre>{error_msg}</pre>")
+            return
+        
+        # Extract request info safely
+        method = 'GET'
+        try:
+            method = getattr(req, 'method', 'GET') or 'GET'
+        except:
+            pass
+        
+        path = '/'
+        try:
+            path = getattr(req, 'path', None) or getattr(req, 'url', '/') or '/'
+            if isinstance(path, str) and '?' in path:
+                path = path.split('?')[0]
+            if not str(path).startswith('/'):
+                path = '/' + str(path)
+        except:
+            pass
         
         # Get headers
         headers = {}
         try:
-            if hasattr(req, 'headers'):
+            if hasattr(req, 'headers') and req.headers:
                 h = req.headers
-                headers = dict(h) if h else {}
+                headers = dict(h) if isinstance(h, dict) else {}
         except:
             pass
         
@@ -119,8 +186,11 @@ def handler(req, res):
         response_body = []
         
         def start_response(status, headers_list):
-            status_code[0] = int(status.split()[0])
-            response_headers[0] = dict(headers_list)
+            try:
+                status_code[0] = int(str(status).split()[0])
+                response_headers[0] = dict(headers_list)
+            except:
+                pass
         
         # Call Flask
         result = flask_app(environ, start_response)
@@ -151,12 +221,11 @@ def handler(req, res):
             res.send(body_bytes)
             
     except Exception as e:
-        import traceback
         error = traceback.format_exc()
-        print(f"Handler error: {error}")
+        print(f"HANDLER ERROR: {error}")
         try:
             res.status(500)
             res.headers['Content-Type'] = 'text/html'
-            res.send(f"<h1>Error</h1><pre>{error}</pre>")
+            res.send(f"<h1>Handler Error</h1><pre>{error}</pre>")
         except:
             pass
